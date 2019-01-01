@@ -5,7 +5,7 @@ import boto3
 import json
 import os
 
-SUPPORT_TEST = 'supportTest2'
+SUPPORT_TEST = 'supportTest1'
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -18,10 +18,8 @@ logger.addHandler(ch)
 hostname = "ec2-18-207-254-90.compute-1.amazonaws.com"
 
 
-
-
-ssh_key='/home/local/ANT/srramas/ssh/id_rsa.pub'
-priv_ssh_key='/home/local/ANT/srramas/ssh/id_rsa'
+ssh_key='/home/srramas/ssh/id_rsa.pub'
+priv_ssh_key='/home/srramas/ssh/id_rsa'
 arr=['cd /home/glue;source .bashrc;aws s3 cp s3://srramasdesktop/jupyterinstall/requirements.txt .;pip install -r requirements.txt --user'
     ,'cd /home/glue;source .bashrc;jupyter notebook --generate-config;jupyter toree install --spark_home=/usr/lib/spark --interpreters=Scala --user']
 
@@ -35,7 +33,7 @@ class Setup:
             EndpointName=SUPPORT_TEST,
             RoleArn='arn:aws:iam::898623153764:role/AWSGlueServiceRoleDefault',
             PublicKey=data,
-            NumberOfNodes=3
+            NumberOfNodes=2
         )
         print(response)
         status=" "
@@ -60,11 +58,11 @@ class Setup:
         glue = boto3.client('emr')
         response = glue.run_job_flow(
             Name="test",
-            ReleaseLabel='emr-5.15.0',
+            ReleaseLabel='emr-5.20.0',
             Instances={
-                'MasterInstanceType': 'm4.large',
-                'SlaveInstanceType': 'm4.large',
-                'InstanceCount': 2,
+                'MasterInstanceType': 'm4.xlarge',
+                'SlaveInstanceType': 'm4.2xlarge',
+                'InstanceCount':3,
                 'KeepJobFlowAliveWhenNoSteps': True,
                 'TerminationProtected': False,
                 'Ec2KeyName': 'awssupporteast',
@@ -75,7 +73,9 @@ class Setup:
                 {'Name': 'Spark'},
               #  {'Name': 'Hbase'},
                 {'Name': 'Hive'},
-               # {'Name': 'Hue'},
+                {'Name': 'Hue'},
+                {'Name': 'Oozie'},
+                {'Name': 'JupyterHub'},
                 {'Name': 'Presto'},
                # {'Name': 'Zeppelin'}
             ],
@@ -83,7 +83,14 @@ class Setup:
             JobFlowRole='EMR_EC2_DefaultRole',
             ServiceRole='EMR_DefaultRole',
             AutoScalingRole='EMR_AutoScaling_DefaultRole',
-            LogUri='s3://aws-logs-898623153764-us-east-1/elasticmapreduce/'
+            LogUri='s3://aws-logs-898623153764-us-east-1/elasticmapreduce/',
+            Configurations=[{"Classification":"jupyter-s3-conf","Properties":{"s3.persistence.bucket":"srramasdesktop","s3.persistence.enabled":"true"}}
+                            ,{"Classification":"spark-env", "Configurations":[{"Classification":"export", "Properties":{"PYSPARK3_PYTHON":"/usr/bin/python3", "PYSPARK_PYTHON":"/usr/bin/python3"}}]},
+            {"Classification": "emrfs-site",
+             "Properties": {"fs.s3.customAWSCredentialsProvider": "com.awsamazon.external.MyAWSCredentialsProvider"}}]
+            ,
+            BootstrapActions=[{"ScriptBootstrapAction":{"Path":"s3://depedentjars/emrfs/configure_emrfs_lib.sh"},"Name":"Custom action"}]
+
         )
         logger.info(response)
         sp.add_step(response['JobFlowId'])
@@ -104,7 +111,14 @@ class Setup:
                         'Jar': 'command-runner.jar',
                         'Args': ['state-pusher-script']
                         }
-                    }]
+                    },
+                    {
+                        'Name':'Jupyter_Lab_Install',
+                        'ActionOnFailure':'TERMINATE_JOB_FLOW',
+                         'HadoopJarStep':{'Jar':'s3://us-east-1.elasticmapreduce/libs/script-runner/script-runner.jar',
+                         'Args':["s3://depedentjars/emrfs/emr_jupyter_lab.sh"]
+                                        }
+                    } ]
             )
             print(response)
 
@@ -177,7 +191,7 @@ c.S3ContentsManager.prefix = "gluejupyter"
                 #!/bin/bash
                 
                 source /home/glue/.bashrc
-                jupyter notebook --no-browser --port=8888 --NotebookApp.allow_password_change=False >jupter.log 2>&1 
+                jupyter lab --no-browser --port=8888 --NotebookApp.allow_password_change=False >jupter.log 2>&1 
 
                 """
         try:
@@ -240,9 +254,7 @@ c.S3ContentsManager.prefix = "gluejupyter"
 
 sp=Setup()
 
-
-sp.createglueEndpoint()
-#response=sp.load_cluster()
-
+response=sp.load_cluster()
+#sp.createglueEndpoint()
 #ssh -o StrictHostKeyChecking=no -i /home/local/ANT/srramas/ssh/id_rsa -N -f -L :8888:localhost:8888 glue@ec2-54-145-188-165.compute-1.amazonaws.com
 

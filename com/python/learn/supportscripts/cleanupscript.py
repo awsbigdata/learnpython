@@ -34,12 +34,19 @@ class Test(object):
             emr.set_termination_protection(JobFlowIds=[cluster['Id']],TerminationProtected=False)
             res = emr.terminate_job_flows(JobFlowIds=[cluster['Id']])
             print(res)
+    def deleteRedshift(self):
+        redshift = boto3.client('redshift')
+        response = redshift.describe_clusters()
+        for cluster in response['Clusters']:
+            response = redshift.delete_cluster(ClusterIdentifier=cluster['ClusterIdentifier'],SkipFinalClusterSnapshot=True)
+            print(response)
 
     def cleanUp(self):
        # self.deleteGlueJobs()
         self.deleteGlueEndpoint()
-        self.deleteKinesis()
+        self.deleteKinesis
         self.deleteEMRcluster()
+        self.deleteRedshift()
 
 clean= Test();
 clean.cleanUp()
