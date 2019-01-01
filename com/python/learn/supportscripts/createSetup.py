@@ -5,6 +5,7 @@ import boto3
 import json
 import os
 
+
 SUPPORT_TEST = 'supportTest1'
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,7 @@ hostname = "ec2-18-207-254-90.compute-1.amazonaws.com"
 
 ssh_key='/home/srramas/ssh/id_rsa.pub'
 priv_ssh_key='/home/srramas/ssh/id_rsa'
+
 arr=['cd /home/glue;source .bashrc;aws s3 cp s3://srramasdesktop/jupyterinstall/requirements.txt .;pip install -r requirements.txt --user'
     ,'cd /home/glue;source .bashrc;jupyter notebook --generate-config;jupyter toree install --spark_home=/usr/lib/spark --interpreters=Scala --user']
 
@@ -157,7 +159,6 @@ class Setup:
                 export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS --executor-memory 5G --driver-memory 5G"
                 export PYTHONPATH="/usr/lib/spark/python:/usr/lib/spark/python/lib/PySpark.zip:/usr/lib/spark/python/lib/py4j-0.10.4-src.zip:/usr/share/aws/glue/etl/python/PyGlue.zip:$PYTHONPATH"
                 
-                export PYSPARK_DRIVER_PYTHON_OPTS="notebook /usr/bin/gluepyspark"
                 
                 ####### end of the file 
             """
@@ -246,7 +247,8 @@ c.S3ContentsManager.prefix = "gluejupyter"
             sftp_client.close()
 
     def startsshtunnel(self,hostname):
-        command='ssh -o StrictHostKeyChecking=no -i /home/local/ANT/srramas/ssh/id_rsa -N -f -L :8888:localhost:8888 glue@{0}'.format(hostname)
+        command= 'ssh -o StrictHostKeyChecking=no -i {1} -N -f -L :8888:localhost:8888 glue@{0}'.format(hostname,
+                                                                                                        priv_ssh_key)
         print(command)
         os.system("netstat -nplt | grep 8888 | grep '0.0' | awk -F' ' '{print $7}' | cut -d'/' -f1 | xargs kill -9")
         os.system(command)
