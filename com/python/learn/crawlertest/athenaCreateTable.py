@@ -5,7 +5,7 @@ import time
 
 client = boto3.client('athena',region_name='us-east-1')
 
-query="""select * from store_sales limit 10000"""
+query="""select *  store_saleslimit 10000"""
 print(query)
 res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': 'hive_glue'},
 

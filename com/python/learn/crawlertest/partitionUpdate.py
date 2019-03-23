@@ -9,7 +9,7 @@ import json
 from datetime import date, datetime
 
 dbname='hive_glue'
-tablename='view_name'
+tablename='bm_cities'
 
 
 def json_serial(obj):
@@ -58,3 +58,8 @@ def map_function(dynamicRecord):
     dynamicRecord['day']=datetime.now().strftime("%d")
     dynamicRecord['hour']=datetime.now().strftime("%H")
     return dynamicRecord
+
+partition_info=json.loads('{"StorageDescriptor":{"OutputFormat":"org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat","InputFormat":"org.apache.hadoop.mapred.TextInputFormat","SerdeInfo":{"SerializationLibrary":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe","Parameters":{"field.delim":","}},"Parameters":{"classification":"csv","recordCount":"2","typeOfData":"file","delimiter":",","skip.header.line.count":"1"},"Location":"s3://athenaiad/cities/year=2010/month=12/day=11/","Columns":[{"Type":"bigint","Name":"id"},{"Type":"string","Name":"name"}],"Compressed":false},"Values":["2010","12","11"]}')
+
+response = client.batch_create_partition(DatabaseName=dbname,TableName=tablename, PartitionInputList=[partition_info])
+print(response)

@@ -5,7 +5,7 @@ class RunResource:
     def createRedshift(self):
         clusterid='redshift'
         response = self.redshift.create_cluster(
-            DBName='redshiftdb',
+            DBName='reddb',
             ClusterIdentifier=clusterid,
             NodeType='dc1.large',
             MasterUsername='reduser',
@@ -15,7 +15,7 @@ class RunResource:
             ],
             ClusterSubnetGroupName='publicsubnet',
             ClusterParameterGroupName='customparametergroup',
-            NumberOfNodes=3,
+            NumberOfNodes=2,
             PubliclyAccessible=True,
             Tags=[
                 {
