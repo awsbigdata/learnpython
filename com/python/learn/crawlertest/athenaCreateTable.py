@@ -5,11 +5,10 @@ import time
 
 client = boto3.client('athena',region_name='us-east-1')
 
-query="""select *  store_saleslimit 10000"""
+query="select * from store_sales limit 100000"
 print(query)
-res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': 'hive_glue'},
-
-                                  ResultConfiguration={'OutputLocation':'s3://testeastreg/output'})
+for i in range(1,30):
+    res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': 'hive_glue'},ResultConfiguration={'OutputLocation':'s3://athenaiad/output'})
 
 print(res)
 queryid=res['QueryExecutionId']
@@ -37,11 +36,6 @@ def processRow(row,columnInfo):
 
 
 
-while 'NextToken' in response:
-    response = client.get_query_results(QueryExecutionId=queryid,NextToken=response['NextToken'])
-    for row in response['ResultSet']['Rows']:
-        processRow(row,response['ResultSet']['ResultSetMetadata']['ColumnInfo'])
-    if 'NextToken' in response:
-         print(response['NextToken'])
+
 
 

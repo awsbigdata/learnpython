@@ -42,8 +42,8 @@ for epart in res['Partitions']:
     epart['StorageDescriptor']['Columns']=storagedes['Columns']
     print(json.dumps(epart['Values']))
     print(json.dumps(epart,default=json_serial))
-   #response = client.update_partition(DatabaseName=dbname, TableName=tablename,
-                                  #     PartitionValueList=epart['Values'], PartitionInput=epart)
+    response = client.update_partition(DatabaseName=dbname, TableName=tablename,
+                                     PartitionValueList=epart['Values'], PartitionInput=epart)
 
 print('Partition sync Completed')
 

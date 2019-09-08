@@ -5,7 +5,9 @@ import boto3
 import json
 import os
 
-SUPPORT_TEST = 'supportTest'
+
+
+SUPPORT_TEST = 'supportTest1'
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -21,9 +23,8 @@ ssh_key = '/home/shiva/ssh/id_rsa.pub'
 priv_ssh_key = '/home/shiva/ssh/id_rsa'
 arr = [
     'curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.32.0/install.sh | bash;. ~/.nvm/nvm.sh;nvm install 8.0.0',
-    'cd /home/glue;source .bashrc;aws s3 cp s3://srramasdesktop/jupyterinstall/requirements.txt .;pip install -r requirements.txt --user'
-    ,
-    'cd /home/glue;source .bashrc;jupyter notebook --generate-config;jupyter toree install --spark_home=/usr/lib/spark --interpreters=Scala --user;jupyter labextension install @jupyterlab/git;jupyter serverextension enable --py jupyterlab_git']
+    'cd /home/glue;source .bashrc;aws s3 cp s3://srramasdesktop/jupyterinstall/requirements.txt .;pip install -r requirements.txt --user',
+    'cd /home/glue;source .bashrc;jupyter notebook --generate-config;jupyter toree install --spark_home=/usr/lib/spark --interpreters=Scala --user;']
 
 
 class Setup:
@@ -59,10 +60,10 @@ class Setup:
         print('Dev endpoint install completed')
 
     def load_cluster(self):
-        glue = boto3.client('emr')
-        response = glue.run_job_flow(
+        emr = boto3.client('emr')
+        response = emr.run_job_flow(
             Name="test",
-            ReleaseLabel='emr-5.20.0',
+            ReleaseLabel='emr-5.24.0',
             Instances={
                 'KeepJobFlowAliveWhenNoSteps': True,
                 'TerminationProtected': False,
@@ -74,7 +75,15 @@ class Setup:
                                              "VolumesPerInstance": 1}], "EbsOptimized": True},
                                                              "BidPriceAsPercentageOfOnDemandPrice": 100,
                                                              "InstanceType": "m4.xlarge"}], "Name": "Master - 1"},
-                                   {"InstanceFleetType": "CORE", "TargetOnDemandCapacity": 1, "TargetSpotCapacity": 1,
+                                   {"InstanceFleetType": "CORE", "TargetOnDemandCapacity": 1,
+                                    "InstanceTypeConfigs": [
+                                        {"WeightedCapacity": 1, "BidPriceAsPercentageOfOnDemandPrice": 100,
+                                         "InstanceType": "r5d.2xlarge"},
+                                        {"WeightedCapacity": 1, "BidPriceAsPercentageOfOnDemandPrice": 100,
+                                         "InstanceType": "d2.2xlarge"},
+                                        {"WeightedCapacity": 1, "BidPriceAsPercentageOfOnDemandPrice": 100,
+                                         "InstanceType": "i3.2xlarge"}], "Name": "Core2"},
+                                   {"InstanceFleetType": "TASK", "TargetSpotCapacity": 1,
                                     "LaunchSpecifications": {"SpotSpecification": {"TimeoutDurationMinutes": 10,
                                                                                    "TimeoutAction": "SWITCH_TO_ON_DEMAND",
                                                                                    "BlockDurationMinutes": 60}},
@@ -82,9 +91,9 @@ class Setup:
                                         {"WeightedCapacity": 1, "BidPriceAsPercentageOfOnDemandPrice": 100,
                                          "InstanceType": "r5d.2xlarge"},
                                         {"WeightedCapacity": 1, "BidPriceAsPercentageOfOnDemandPrice": 100,
-                                         "InstanceType": "h1.2xlarge"},
+                                         "InstanceType": "d2.2xlarge"},
                                         {"WeightedCapacity": 1, "BidPriceAsPercentageOfOnDemandPrice": 100,
-                                         "InstanceType": "i3.2xlarge"}], "Name": "Core - 2"}],
+                                         "InstanceType": "i3.2xlarge"}], "Name": "TASK2"}],
                 'Ec2SubnetIds': ["subnet-0586e44466984e292", "subnet-07dde1960a72fa516", "subnet-0e8816c7392a9b3c8",
                                  "subnet-1003d74d", "subnet-e65dabcb"]
 
@@ -108,7 +117,9 @@ class Setup:
             LogUri='s3://aws-logs-898623153764-us-east-1/elasticmapreduce/',
             Configurations=[{"Classification": "jupyter-s3-conf",
                              "Properties": {"s3.persistence.bucket": "srramasdesktop",
-                                            "s3.persistence.enabled": "true"}}
+                                            "s3.persistence.enabled": "true"}},
+                            {"Classification": "hdfs-site",
+                             "Properties": {"dfs.replication": "3"}}
                 , {"Classification": "spark-env", "Configurations": [{"Classification": "export", "Properties": {
                     "PYSPARK3_PYTHON": "/usr/bin/python3", "PYSPARK_PYTHON": "/usr/bin/python3"}}]},
                             {"Classification": "emrfs-site",
@@ -197,8 +208,6 @@ c = get_config()
 
 # Tell Jupyter to use S3ContentsManager for all storage.
 c.NotebookApp.contents_manager_class = S3ContentsManager
-c.S3ContentsManager.access_key_id = None
-c.S3ContentsManager.secret_access_key =None
 c.S3ContentsManager.bucket = "srramasdesktop"
 c.S3ContentsManager.prefix = "gluejupyter"
 
@@ -281,6 +290,7 @@ c.S3ContentsManager.prefix = "gluejupyter"
 
 sp = Setup()
 
-response = sp.load_cluster()
-# sp.createglueEndpoint()
-# ssh -o StrictHostKeyChecking=no -i /home/local/ANT/shiva/ssh/id_rsa -N -f -L :8888:localhost:8888 glue@ec2-54-145-188-165.compute-1.amazonaws.com
+#response = sp.load_cluster()
+sp.createglueEndpoint()
+# ssh -o StrictHostKeyChecking=no -i /home/local/ANT/shiva/ssh/id_rsa -N -f -L :8888:localhost:8888 glue@ec2-3-87-64-211.compute-1.amazonaws.com
+

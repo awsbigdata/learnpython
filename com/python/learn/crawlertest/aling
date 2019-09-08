@@ -1,0 +1,12 @@
+import re
+
+#Check if the string starts with "The" and ends with "Spain":
+
+txt = """
+HIVE_CANNOT_OPEN_SPLIT: Error opening Hive split s3://athenaiad/grab-mercury/datalake/transformed/grab-incentives/units/year=2006/month=11/day=9/hour=6/grab-incentives-part-00000-8f5ea214-4f49-452a-b124-f9025692ea00-c000.snappy.parquet (offset=0, length=1421312): Not valid Parquet file: s3://athenaiad/grab-mercury/datalake/transformed/grab-incentives/units/year=2006/month=11/day=9/hour=6/grab-incentives-part-00000-8f5ea214-4f49-452a-b124-f9025692ea00-c000.snappy.parquet expected magic number: [80, 65, 82, 49] got: [48, 0, -69, 26]
+"""
+m = re.search("s3://[^ ]+", txt)
+
+if m:
+    found = m.group()
+    print(found)

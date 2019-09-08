@@ -49,4 +49,4 @@ class Test(object):
         self.deleteRedshift()
 
 clean= Test();
-clean.cleanUp()
+clean.deleteGlueJobs()
