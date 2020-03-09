@@ -7,7 +7,7 @@ import os
 
 
 
-SUPPORT_TEST = 'supportTest1'
+SUPPORT_TEST = 'supportTest'
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -37,9 +37,11 @@ class Setup:
             EndpointName=SUPPORT_TEST,
             RoleArn='arn:aws:iam::898623153764:role/AWSGlueServiceRoleDefault',
             PublicKey=data,
-            NumberOfNodes=3,
+            NumberOfWorkers=3,
+            WorkerType='G.1X',
+            GlueVersion='1.0',
             Arguments={
-                "--enable-glue-datacatalog": ""
+                "--enable-glue-datacatalog": "true"
             }
         )
         print(response)
@@ -63,7 +65,7 @@ class Setup:
         emr = boto3.client('emr')
         response = emr.run_job_flow(
             Name="test",
-            ReleaseLabel='emr-5.24.0',
+            ReleaseLabel='emr-5.29.0',
             Instances={
                 'KeepJobFlowAliveWhenNoSteps': True,
                 'TerminationProtected': False,
@@ -124,7 +126,7 @@ class Setup:
                     "PYSPARK3_PYTHON": "/usr/bin/python3", "PYSPARK_PYTHON": "/usr/bin/python3"}}]},
                             {"Classification": "emrfs-site",
                              "Properties": {
-                                 "fs.s3.customAWSCredentialsProvider": "com.awsamazon.external.MyAWSCredentialsProvider"}}]
+                                 "fs.s3.customAWSCredentialsProvider": "com.awsamazon.external.MyAWSCredentialsProvider","s3.credential.path":"s3://depedentjars/emrfs/credential.json","s3.credential":"true"}}]
             ,
             BootstrapActions=[{"ScriptBootstrapAction": {"Path": "s3://depedentjars/emrfs/configure_emrfs_lib.sh"},
                                "Name": "Custom action"}]
@@ -177,6 +179,8 @@ class Setup:
                 print(pipcom)
                 stdin, stdout, stderr = client.exec_command(pipcom)
                 print(stdout.readlines(),)
+                print(stderr.readlines(),)
+
         finally:
             client.close()
 
@@ -192,7 +196,7 @@ class Setup:
                 export CLASSPATH=":/usr/lib/hadoop-lzo/lib/*:/usr/lib/hadoop/hadoop-aws.jar:/usr/share/aws/aws-java-sdk/*:/usr/share/aws/emr/emrfs/conf:/usr/share/aws/emr/emrfs/lib/*:/usr/share/aws/emr/emrfs/auxlib/*:/usr/share/aws/glue/etl/jars/*:/usr/share/aws/glue/etl/conf:/usr/share/aws/redshift/jdbc/RedshiftJDBC.jar"
 
                 export SPARK_SUBMIT_OPTIONS="$SPARK_SUBMIT_OPTIONS --executor-memory 5G --driver-memory 5G"
-                export PYTHONPATH="/usr/lib/spark/python:/usr/lib/spark/python/lib/PySpark.zip:/usr/lib/spark/python/lib/py4j-0.10.4-src.zip:/usr/share/aws/glue/etl/python/PyGlue.zip:$PYTHONPATH"
+                export PYTHONPATH="/usr/lib/spark/python:/usr/lib/spark/python/lib/PySpark.zip:/usr/lib/spark/python/lib/py4j-src.zip:/usr/share/aws/glue/etl/python/PyGlue.zip:$PYTHONPATH"
 
                 export PYSPARK_DRIVER_PYTHON_OPTS="notebook /usr/bin/gluepyspark"
 

@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
 import boto3
+from multiprocessing import Process, Lock
+
 import time
-import re
-client = boto3.client('athena',region_name='ap-southeast-1')
+client = boto3.client('athena',region_name='us-east-1')
 
 def deletes3_ob(path):
     s3_client = boto3.client('s3', region_name='us-east-1')
@@ -21,7 +22,7 @@ def athena_select():
     print(query)
     res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': 'grab_incentives'},
 
-                                       ResultConfiguration={'OutputLocation': 's3://athenapartitionsync/output'})
+                                       ResultConfiguration={'OutputLocation': 's3://athenaiad/output'})
     print(res)
     queryid = res['QueryExecutionId']
     response = client.get_query_execution(
@@ -29,11 +30,12 @@ def athena_select():
     )
     status = response['QueryExecution']['Status']['State']
     print(status)
-    while (status == "RUNNING"):
-        time.sleep(10)
+    while (status != "SUCCEEDED" and status != "FAILED"):
+        ##time.sleep(10)
         response = client.get_query_execution(
             QueryExecutionId=queryid
         )
+        #print(response)
         status = response['QueryExecution']['Status']['State']
     if(status =='FAILED'):
         print(response['QueryExecution']['Status']['StateChangeReason'])
@@ -49,10 +51,11 @@ def athena_select():
        """
 
 
-for i in range(1,500):
-        time.sleep(100)
-        athena_select()
+if __name__ == '__main__':
+    lock = Lock()
 
+    for num in range(10):
+        Process(target=athena_select).start()
 
 
 print("Execution completed")
