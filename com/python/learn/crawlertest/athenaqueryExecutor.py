@@ -18,7 +18,7 @@ def deletes3_ob(path):
 
 def athena_select():
     global queryid, response
-    query = """SELECT u.unit_code, u.source, u.vertical, u.executor_type, u.executor_ref, u.unit_ref, u.occurred_at, u.location, u.value, u.subunit, u.subunit_value, u.content, u.metadata FROM grab_incentives.units AS u WHERE ( u.occurred_at >= timestamp '2019-03-05 22:00:00' ) AND ( u.occurred_at < timestamp '2019-03-06 10:01:00' ) AND ( ( ( u.source = 'TRANSPORT' ) AND ( json_extract_scalar(u.metadata, '$.cityID') = '18' OR json_extract_scalar(u.metadata, '$.cityID') IS NULL ) ) OR ( ( u.source = 'LEGACY_TRANSPORT' ) AND ( json_extract_scalar(u.metadata, '$.cityID') = '18' OR json_extract_scalar(u.metadata, '$.cityID') IS NULL ) ) ) /* 63ff33da-c94c-4c70-8893-587ab6675cd6 */"""
+    query = """SELECT * FROM athena_learn.akafkatest limit 10;"""
     print(query)
     res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': 'grab_incentives'},
 

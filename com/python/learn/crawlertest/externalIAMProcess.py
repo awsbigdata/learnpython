@@ -13,7 +13,7 @@ def json_serial(obj):
     """JSON serializer for objects not serializable by default json code"""
 
     if isinstance(obj, (datetime, date)):
-        return str(obj.utcnow().replace(microsecond=0).isoformat())+"Z"
+        return str(obj.now().replace(microsecond=0).isoformat())+"Z"
 #dbname=argv[1]
 #tablename=argv[2]
 

@@ -29,10 +29,10 @@ DatasetSchema = [
 glue.create_table(
             DatabaseName='hive_glue',
             TableInput={
-                'Name': "testnulls",
+                'Name': "marineeconomy",
                 'StorageDescriptor': {
                     'Columns': DatasetSchema,
-                    'Location': "s3://athenaiad/a5165248751/",
+                    'Location': "wasb://isak@ayovkkeokdpiaazfunctions.blob.core.windows.net/marine",
                     'InputFormat': 'org.apache.hadoop.mapred.TextInputFormat',
                     'OutputFormat': 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',
                     'SerdeInfo': {
