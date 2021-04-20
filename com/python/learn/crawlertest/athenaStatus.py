@@ -1,8 +1,5 @@
 import boto3
 
-
-
-
 def  extract_execution_status(numbeofrows=50):
     client = boto3.client('athena')
 

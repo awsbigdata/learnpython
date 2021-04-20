@@ -83,7 +83,7 @@ class Setup:
         if(ex_cid== None):
             response = emr.run_job_flow(
                 Name="supportemr",
-                ReleaseLabel='emr-5.30.1',
+                ReleaseLabel='emr-6.2.0',
                 Instances={
                     'MasterInstanceType': 'm5.xlarge',
                     'SlaveInstanceType': 'm5.2xlarge',
@@ -383,21 +383,23 @@ c.S3ContentsManager.prefix = "gluejupyter"
                             'Encrypted': False
                         }
                     }],
-                ImageId='ami-0fc61db8544a617ed',
+                ImageId='ami-047a51fa27710816e',
                 MinCount=1,
                 MaxCount=1,
-                InstanceType='t3a.2xlarge',
+                InstanceType='t2.2xlarge',
                 KeyName='awssupporteast',
                 SecurityGroupIds=['sg-dbe372a6'],
                 SubnetId='subnet-e65dabcb',
-                TagSpecifications=[{"ResourceType": "instance", "Tags": [{"Key": "jumberhost", "Value": "support"}]}]
+                IamInstanceProfile={"Arn":"arn:aws:iam::898623153764:instance-profile/IAMlab"},
+                
+                TagSpecifications=[{"ResourceType": "instance", "Tags": [{"Key": "jumberhost", "Value": "support"},{"Key": "Name", "Value": "jumperhost"}]}]
             )
         # instanceid=instances['Instances'][0]['InstanceId'];
         status = client.describe_instances(Filters=Filters)
 
-        # print(status)
-        while (status['Reservations'][0]['Instances'][0]['State']['Name'] == 'pending'):
-            time.sleep(10)
+        logger.info(status)
+        while (len(status['Reservations']) >0 and status['Reservations'][0]['Instances'][0]['State']['Name'] == 'pending'):
+            time.sleep(20)
             status = client.describe_instances(Filters=Filters)
         time.sleep(3)
         print(status['Reservations'][0]['Instances'][0]['PublicDnsName'])
@@ -419,6 +421,6 @@ sp.callermethod(sys.argv[1])
 # response=sp.load_cluster()
 # sp.createglueEndpoint()
 # sp.startInstance();
-# ssh -o StrictHostKeyChecking=no -i /home/local/ANT/srramas/ssh/id_rsa -N -f -L :8888:localhost:8888 glue@ec2-54-242-175-126.compute-1.amazonaws.com
+# ssh -o StrictHostKeyChecking=no -i /home/local/ANT/srramas/ssh/id_rsa -N -f -L :8888:localhost:8888 glue@ec2-54-226-131-25.compute-1.amazonaws.com
 
 # dict ={"string",StringType(),}

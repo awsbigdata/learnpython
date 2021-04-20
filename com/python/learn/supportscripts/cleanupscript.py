@@ -40,13 +40,21 @@ class Test(object):
         for cluster in response['Clusters']:
             response = redshift.delete_cluster(ClusterIdentifier=cluster['ClusterIdentifier'],SkipFinalClusterSnapshot=True)
             print(response)
+    def deleteCrawler(self):
+        response=self.glue.get_crawlers()
+        for crawler in response['Crawlers']:
+            response = self.glue.delete_crawler(
+                Name=crawler['Name']
+            )
+            print("deleting crawler {}".format(crawler['Name']))
 
     def cleanUp(self):
-       # self.deleteGlueJobs()
+        #self.deleteGlueJobs()
         self.deleteGlueEndpoint()
         self.deleteKinesis
         self.deleteEMRcluster()
         self.deleteRedshift()
+        self.deleteCrawler()
 
 clean= Test();
 clean.cleanUp()

@@ -7,7 +7,7 @@ class RunResource:
         response = self.redshift.create_cluster(
             DBName='reddb',
             ClusterIdentifier=clusterid,
-            NodeType='dc1.large',
+            NodeType='dc2.large',
             MasterUsername='reduser',
             MasterUserPassword='Redpassw0rd',
             VpcSecurityGroupIds=[
