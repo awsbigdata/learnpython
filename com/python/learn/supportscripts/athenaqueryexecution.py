@@ -8,7 +8,7 @@ client = boto3.client('athena',region_name='us-east-1')
 
 
 def athena_select():
-    query = """SELECT * FROM json_atrain limit 10;"""
+    query = """SELECT * FROM "debug_db"."par_testopt" limit 10;"""
     #query=""" SELECT count(1) FROM "athena_training"."testapi" """
     print(query)
     res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': 'athena_training'},

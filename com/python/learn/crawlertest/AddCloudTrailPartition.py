@@ -3,7 +3,7 @@ import datetime
 import time
 
 
-a = datetime.datetime(2013,04,06)
+a = datetime.datetime(2013,4,6)
 
 region='us-east-1'
 table_bucket='awssrramascloudtrail'

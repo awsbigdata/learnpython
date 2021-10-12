@@ -129,8 +129,11 @@ class Setup:
                                      "fs.s3.customAWSCredentialsProvider": "com.awsamazon.external.MyAWSCredentialsProvider"}}
                                 ]
                 ,
+                EbsRootVolumeSize=50,
                 BootstrapActions=[{"ScriptBootstrapAction": {"Path": "s3://depedentjars/emrfs/configure_emrfs_lib.sh"},
-                                   "Name": "Custom action"}]
+                                   "Name": "EMRFS action"},
+                                  {"ScriptBootstrapAction": {"Path": "s3://athenaiad/emrbr/pythonBA.sh"},
+                                   "Name": "Python3library"}]
 
             )
             logger.info(response)
@@ -372,6 +375,9 @@ c.S3ContentsManager.prefix = "gluejupyter"
             'pending', 'running',
         ])):
             #print("creating new")
+            ssm = boto3.client('ssm', region_name='us-east-1')
+            parameter = ssm.get_parameter(Name='/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2',
+                                          WithDecryption=True)
             instances = client.run_instances(
                 BlockDeviceMappings=[
                     {
@@ -383,10 +389,10 @@ c.S3ContentsManager.prefix = "gluejupyter"
                             'Encrypted': False
                         }
                     }],
-                ImageId='ami-047a51fa27710816e',
+                ImageId= parameter['Parameter']['Value'],
                 MinCount=1,
                 MaxCount=1,
-                InstanceType='t2.2xlarge',
+                InstanceType='t3a.2xlarge',
                 KeyName='awssupporteast',
                 SecurityGroupIds=['sg-dbe372a6'],
                 SubnetId='subnet-e65dabcb',
@@ -398,7 +404,7 @@ c.S3ContentsManager.prefix = "gluejupyter"
         status = client.describe_instances(Filters=Filters)
 
         logger.info(status)
-        while (len(status['Reservations']) >0 and status['Reservations'][0]['Instances'][0]['State']['Name'] == 'pending'):
+        while (len(status['Reservations']) < 1 or status['Reservations'][0]['Instances'][0]['State']['Name'] == 'pending'):
             time.sleep(20)
             status = client.describe_instances(Filters=Filters)
         time.sleep(3)

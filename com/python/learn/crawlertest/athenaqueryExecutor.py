@@ -18,10 +18,10 @@ def getTables(dbname):
 
 
 
-def athena_select(dbname,tbname):
-    query = """SELECT *  FROM {}.{}  limit 10""".format(dbname,tbname)
+def athena_select(dbname,query):
+    #query = """SELECT *  FROM {}.{}  limit 10""".format(dbname,tbname)
     print(query)
-    res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': dbname},
+    res = client.start_query_execution(QueryString=query, QueryExecutionContext={'Database': "notexistDB"},
 
                                        ResultConfiguration={'OutputLocation': 's3://athenaiad/output'})
     print(res)
@@ -47,25 +47,27 @@ def deleteTable(dbname,tablename):
     gluecli.delete_table(DatabaseName=dbname,Name=tablename)
 
 
-response = gluecli.get_databases()
-for db in response['DatabaseList']:
-    dbname=db['Name']
-    print("dbname ",dbname)
-    tables=getTables(dbname)
-    for table in tables:
-        queryid,status=athena_select(dbname,table)
-        if(status=='SUCCEEDED'):
-            response = client.get_query_results(QueryExecutionId=queryid)
-            if (len(response['ResultSet']['Rows'])<2):
-                print("deleting table : ",table)
-                deleteTable(dbname,table)
-        else:
-            print("deleting table :", table)
-            deleteTable(dbname, table)
+# response = gluecli.get_databases()
+# for db in response['DatabaseList']:
+#     dbname=db['Name']
+#     print("dbname ",dbname)
+#     tables=getTables(dbname)
+#     for table in tables:
+#         queryid,status=athena_select(dbname,table)
+#         if(status=='SUCCEEDED'):
+#             response = client.get_query_results(QueryExecutionId=queryid)
+#             if (len(response['ResultSet']['Rows'])<2):
+#                 print("deleting table : ",table)
+#                 deleteTable(dbname,table)
+#         else:
+#             print("deleting table :", table)
+#             deleteTable(dbname, table)
 
 
 print("Execution completed")
 
 
+##SELECT * FROM "hive_glue"."bm_cities" limit 10;
 
-
+for i in range(20):
+    athena_select("select * form table")

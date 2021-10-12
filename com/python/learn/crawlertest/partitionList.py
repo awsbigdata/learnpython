@@ -17,9 +17,13 @@ def json_serial(obj):
 
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
-dbname=argv[1]
-tablename=argv[2]
-region=argv[3]
+# dbname=argv[1]
+# tablename=argv[2]
+# region=argv[3]
+
+dbname="hive_glue"
+tablename="bm_cities"
+region="us-east-1"
 
 client = boto3.client('glue',region_name=region)
 
@@ -44,7 +48,7 @@ print('Partition list started')
 def printPartition(nextToken=""):
     res = client.get_partitions(DatabaseName=dbname, TableName=tablename, MaxResults=1000,NextToken=nextToken)
     for epart in res['Partitions']:
-        print(partitionConstract(tabledes['PartitionKeys'], epart['Values']))
+        print(epart)
     return res
 
 

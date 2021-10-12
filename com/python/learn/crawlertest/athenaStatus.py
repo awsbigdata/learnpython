@@ -1,17 +1,8 @@
 import boto3
 
-def  extract_execution_status(numbeofrows=50):
-    client = boto3.client('athena')
+client = boto3.client('athena',region_name='us-east-1')
 
-    response = client.list_query_executions(MaxResults=50);
-    next=response['NextToken']
-    remain_rows=numbeofrows-50
-    while(remain_rows>50):
+res = client.start_query_execution(QueryString="CREATE SCHEMA IF NOT EXISTS e6f287f0_ff0a_247ee_86b2_e2acdc49940e", QueryExecutionContext={'Database': "e6f287f0_ff0a_247ee_86b2_e2acdc49940e"},
 
-        remain_rows = numbeofrows - 50
-    print(response)
-
-
-extract_execution_status()
-
-
+                                   ResultConfiguration={'OutputLocation': 's3://athenaiad/output'})
+print(res)
