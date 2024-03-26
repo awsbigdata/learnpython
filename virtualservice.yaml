@@ -12,18 +12,20 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: airbyte-virtual-service
+  name: airbyte-vs
   namespace: deus
 spec:
-  exportTo:
-    - .
   gateways:
     - istio-system/https-internal
   hosts:
     - airbyte.dev.us.quadpay.io
   http:
-    - route:
+    - match:
+        - uri:
+            prefix: /
+      name: slash
+      route:
         - destination:
-            host: airbyte.deus.svc.cluster.local
+            host: airbyte-us-airbyte-webapp-svc.deus.svc.cluster.local
             port:
               number: 80
