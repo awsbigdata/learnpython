@@ -1,20 +1,28 @@
 apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: airbyte-destination-rule
+  namespace: deus
+host: airbyte-us-airbyte-webapp-svc.deus.svc.cluster.local
+trafficPolicy:
+  loadBalancer:
+    simple: ROUND_ROBIN
+---
+apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: airbyte-vs
+  name: airbyte-virtual-service
   namespace: deus
 spec:
+  exportTo:
+    - .
   gateways:
-  - istio-system/https-internal
+    - istio-system/https-internal
   hosts:
-  - airbyteus.dev.quadpay.internal
+    - airbyte.dev.us.quadpay.io
   http:
-  - name: slash
-    match: 
-    - uri: 
-        prefix: /
-    route:
-    - destination:
-        port: 
-          number: 80
-        host: airbyte-us-airbyte-webapp-svc
+    - route:
+        - destination:
+            host: airbyte.deus.svc.cluster.local
+            port:
+              number: 80
