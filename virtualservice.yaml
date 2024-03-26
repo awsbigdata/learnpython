@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: airbyte-vs
+  namespace: deus
+spec:
+  gateways:
+  - istio-system/https-internal
+  hosts:
+  - airbyteus.dev.quadpay.io
+  http:
+  - name: slash
+    match: 
+    - uri: 
+        prefix: /
+    route:
+    - destination:
+        port: 
+          number: 9898
+        host: airbyte-us-airbyte-webapp-svc
